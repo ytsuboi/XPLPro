@@ -1,7 +1,4 @@
-#define XPLM200
-
-
-
+#include <string.h>
 
 #include "XPLProCommon.h"
 
@@ -155,7 +152,7 @@ void _updateDataRefs(int forceUpdate)
 				{
 					lastRefSent = i;
 					myBindings[i].currentSentl[0] = newVall;
-					sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%ld", i, newVall);
+					snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%ld", i, newVall);
 					myXPLDevices[myBindings[i].deviceIndex]->_writePacket(XPLCMD_DATAREFUPDATEINT, writeBuffer);
 					myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
 
@@ -176,7 +173,7 @@ void _updateDataRefs(int forceUpdate)
 						lastRefSent = i;
 						lastRefElementSent = j;
 						myBindings[i].currentSentl[j] = newVall;
-						sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%ld,%i", i, newVall,j);
+						snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%ld,%i", i, newVall,j);
 						myXPLDevices[myBindings[i].deviceIndex]->_writePacket(XPLCMD_DATAREFUPDATEINTARRAY, writeBuffer);
 						myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
 
@@ -198,7 +195,7 @@ void _updateDataRefs(int forceUpdate)
 				{
 					lastRefSent = i;
 					myBindings[i].currentSentf[0] = newValf;
-					sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%f", i, newValf);
+					snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%f", i, newValf);
 					myXPLDevices[myBindings[i].deviceIndex]->_writePacket(XPLCMD_DATAREFUPDATEFLOAT, writeBuffer);
 					myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
 
@@ -223,7 +220,7 @@ void _updateDataRefs(int forceUpdate)
 						lastRefSent = i;
 						lastRefElementSent = j;
 						myBindings[i].currentSentf[j] = newValf;
-						sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%f,%i", i, newValf,j);
+						snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%f,%i", i, newValf,j);
 						myXPLDevices[myBindings[i].deviceIndex]->_writePacket(XPLCMD_DATAREFUPDATEFLOATARRAY, writeBuffer);
 						myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
 
@@ -246,7 +243,7 @@ void _updateDataRefs(int forceUpdate)
 				{
 					lastRefSent = i;
 					myBindings[i].currentSentD[0] = newValD;
-					sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%f", i, newValD);
+					snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%f", i, newValD);
 					myXPLDevices[myBindings[i].deviceIndex]->_writePacket(XPLCMD_DATAREFUPDATEFLOAT, writeBuffer);
 					myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
 
@@ -341,7 +338,7 @@ int findDevices(void)
 
 	fprintf(errlog, "Searching Com Ports... ");
 
-	for (UINT i = 1; i < 256; i++)
+	for (unsigned int i = 1; i < 256; i++)
 	{
 		port = new serialClass;
 		

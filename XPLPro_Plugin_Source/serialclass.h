@@ -2,13 +2,26 @@
 
 #define XPL_MAX_SERIALPORTS
 
+#if IBM
 #include <windows.h>
+#endif
+
+#if APL
+#include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <dirent.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 
 class serialClass
 {
 private:
+
+#if IBM
     //Serial comm handler
     HANDLE hSerial = NULL;
     //Connection status
@@ -17,9 +30,15 @@ private:
     COMSTAT status;
     //Keep track of last error
     DWORD errors;
+#endif
 
-   
-   
+#if APL
+    int fd = -1;
+    bool connected = false;
+    struct termios originalTTYAttrs;
+#endif
+
+
 
 public:
     //Initialize Serial communication with the given COM port
@@ -43,8 +62,7 @@ public:
     //Check if we are actually connected
     bool IsConnected(void);
 
-    char   portName[20];					// port name
+    char   portName[64];					// port name (longer for macOS /dev/tty.* paths)
     int valid;
-   
-};
 
+};

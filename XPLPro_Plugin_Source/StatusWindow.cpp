@@ -1,11 +1,7 @@
 
 #include <stdio.h>
-#include <string>
-#include <ctime>  
-
-
-
-#define XPLM200
+#include <string.h>
+#include <ctime>
 
 #include "XPLProCommon.h"
 #include "XPLMPlugin.h"

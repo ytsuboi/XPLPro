@@ -1,5 +1,6 @@
 #pragma once
 //#include "Serial.h"
+#include <ctime>
 #include "XPLProCommon.h"
 
 void BindingsSetup(void);

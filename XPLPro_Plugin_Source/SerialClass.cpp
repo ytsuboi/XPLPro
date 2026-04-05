@@ -2,12 +2,13 @@
 #include "XPLProCommon.h"
 
 #include <ctime>
+#include <string.h>
 
 extern FILE* errlog;				// Used for logging problems
 
 serialClass::serialClass()
 {
-  
+
 
 }
 
@@ -16,6 +17,9 @@ serialClass::~serialClass()
     shutDown();
 
 }
+
+#if IBM
+// ===================== Windows implementation =====================
 
 int serialClass::begin(int portNumber)
 {
@@ -26,7 +30,7 @@ int serialClass::begin(int portNumber)
     //Form the Raw device name
 
 
-    sprintf_s(portName, 20, "\\\\.\\COM%u", portNumber);
+    sprintf_s(portName, sizeof(portName), "\\\\.\\COM%u", portNumber);
 
     //Try to connect to the given port throuh CreateFile
     this->hSerial = CreateFileA(portName,
@@ -73,7 +77,7 @@ int serialClass::begin(int portNumber)
             {
                 //If everything went fine we're connected
                 this->connected = true;
-                //Flush any remaining characters in the buffers 
+                //Flush any remaining characters in the buffers
                 PurgeComm(this->hSerial, PURGE_RXCLEAR | PURGE_TXCLEAR);
                 //We wait 2s as the arduino board will be resetting
                 Sleep(ARDUINO_WAIT_TIME);
@@ -95,7 +99,7 @@ int serialClass::shutDown(void)
         //Close the serial handler
         CloseHandle(this->hSerial);
         fprintf(errlog, "...Closing port %s\n", portName);
-        
+
     }
     return 0;
 }
@@ -166,3 +170,183 @@ bool serialClass::IsConnected(void)
     return this->connected;
 }
 
+#endif // IBM
+
+
+#if APL
+// ===================== macOS implementation =====================
+
+int serialClass::begin(int portNumber)
+{
+    this->connected = false;
+
+    // On macOS, serial ports are /dev/tty.usbmodem* or /dev/tty.usbserial*
+    // portNumber is used as an index into discovered ports
+    // We scan /dev/ for matching entries
+
+    DIR* dir = opendir("/dev");
+    if (!dir)
+    {
+        fprintf(errlog, "Serial: Unable to open /dev directory\n");
+        return -1;
+    }
+
+    int currentIndex = 0;
+    struct dirent* entry;
+    char devicePath[256];
+    bool found = false;
+
+    while ((entry = readdir(dir)) != NULL)
+    {
+        // Match Arduino-typical serial device names on macOS
+        if (strncmp(entry->d_name, "tty.usbmodem", 12) == 0 ||
+            strncmp(entry->d_name, "tty.usbserial", 13) == 0 ||
+            strncmp(entry->d_name, "tty.wchusbserial", 16) == 0)
+        {
+            currentIndex++;
+            if (currentIndex == portNumber)
+            {
+                snprintf(devicePath, sizeof(devicePath), "/dev/%s", entry->d_name);
+                found = true;
+                break;
+            }
+        }
+    }
+    closedir(dir);
+
+    if (!found)
+    {
+        return -1;
+    }
+
+    snprintf(portName, sizeof(portName), "%s", devicePath);
+
+    // Open the serial port
+    this->fd = open(devicePath, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    if (this->fd == -1)
+    {
+        fprintf(errlog, "Serial: Unable to open port %s\n", devicePath);
+        return -1;
+    }
+
+    // Prevent other processes from using this port
+    if (ioctl(this->fd, TIOCEXCL) == -1)
+    {
+        fprintf(errlog, "Serial: Unable to set exclusive access on %s\n", devicePath);
+        close(this->fd);
+        this->fd = -1;
+        return -1;
+    }
+
+    // Now that the port is open, clear the O_NONBLOCK flag so subsequent reads will block
+    // Actually, we want non-blocking reads for the plugin's flight loop
+    // Keep O_NONBLOCK set
+
+    // Get the current terminal attributes and save them
+    struct termios options;
+    if (tcgetattr(this->fd, &options) == -1)
+    {
+        fprintf(errlog, "Serial: Unable to get port attributes for %s\n", devicePath);
+        close(this->fd);
+        this->fd = -1;
+        return -1;
+    }
+    this->originalTTYAttrs = options;
+
+    // Set raw input mode (no echo, no canonical processing, etc.)
+    cfmakeraw(&options);
+
+    // Set baud rate
+    cfsetispeed(&options, B115200);
+    cfsetospeed(&options, B115200);
+
+    // 8N1 (8 data bits, no parity, 1 stop bit)
+    options.c_cflag |= (CS8 | CLOCAL | CREAD);
+    options.c_cflag &= ~(PARENB | CSTOPB | CRTSCTS);
+
+    // Set DTR to reset Arduino
+    int status_bits;
+    ioctl(this->fd, TIOCMGET, &status_bits);
+    status_bits |= TIOCM_DTR;
+    ioctl(this->fd, TIOCMSET, &status_bits);
+
+    // Apply settings
+    if (tcsetattr(this->fd, TCSANOW, &options) == -1)
+    {
+        fprintf(errlog, "Serial: Unable to set port attributes for %s\n", devicePath);
+        close(this->fd);
+        this->fd = -1;
+        return -1;
+    }
+
+    // Flush any remaining data
+    tcflush(this->fd, TCIOFLUSH);
+
+    this->connected = true;
+
+    // Wait for Arduino to reset (same as Windows side)
+    usleep(ARDUINO_WAIT_TIME * 1000);
+
+    fprintf(errlog, "Serial:  port \"%s\" opened successfully.\n", portName);
+    return portNumber;
+}
+
+int serialClass::shutDown(void)
+{
+    if (this->connected)
+    {
+        this->connected = false;
+
+        // Restore original terminal attributes
+        tcsetattr(this->fd, TCSANOW, &this->originalTTYAttrs);
+
+        close(this->fd);
+        this->fd = -1;
+        fprintf(errlog, "...Closing port %s\n", portName);
+    }
+    return 0;
+}
+
+
+int serialClass::readData(char* buffer, size_t nbChar)
+{
+    if (!this->connected || this->fd == -1) return 0;
+
+    // Check how many bytes are available
+    int bytesAvailable = 0;
+    ioctl(this->fd, FIONREAD, &bytesAvailable);
+
+    if (bytesAvailable > 0)
+    {
+        size_t toRead = (size_t)bytesAvailable > nbChar ? nbChar : (size_t)bytesAvailable;
+
+        ssize_t bytesRead = read(this->fd, buffer, toRead);
+        if (bytesRead > 0)
+        {
+            return (int)bytesRead;
+        }
+    }
+
+    return 0;
+}
+
+
+bool serialClass::writeData(const char* buffer, size_t nbChar)
+{
+    if (!this->connected || this->fd == -1) return false;
+
+    ssize_t bytesWritten = write(this->fd, buffer, nbChar);
+    if (bytesWritten == -1)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool serialClass::IsConnected(void)
+{
+    return this->connected;
+}
+
+#endif // APL

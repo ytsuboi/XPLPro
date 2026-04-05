@@ -2,8 +2,8 @@
 
 #pragma once
 
-#define CFG_FILE				"Resources\\plugins\\XPLPro\\XPLPro.cfg"
-#define CFG_ABBREVIATIONS_FILE  "Resources\\plugins\\XPLPro\\abbreviations.txt"
+#define CFG_FILE				"Resources/plugins/XPLPro/XPLPro.cfg"
+#define CFG_ABBREVIATIONS_FILE  "Resources/plugins/XPLPro/abbreviations.txt"
 
 #define ARDUINO_WAIT_TIME 2000
 

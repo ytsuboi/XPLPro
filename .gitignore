@@ -391,3 +391,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+.DS_Store
+
+# Claude Code conversation log
+CLAUDE.md
+
+# CMake build directories
+build_mac/
+build/

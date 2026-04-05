@@ -1,5 +1,6 @@
 
-#define XPLM200
+#include <string.h>
+#include <ctype.h>
 
 #include "XPLMPlugin.h"
 #include "XPLMDataAccess.h"
@@ -175,7 +176,7 @@ void XPLDevice::_processPacket(void)
 			//fprintf(errlog, "RWMode %c was saved as int %i\r\n", strippedPacket[1], myBindings[refHandleCounter].RWMode);
 			myBindings[refHandleCounter].xplaneDataRefTypeID = XPLMGetDataRefTypes(myBindings[refHandleCounter].xplaneDataRefHandle);
 
-			sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",%i", refHandleCounter);
+			snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i", refHandleCounter);
 
 			_writePacket(XPLRESPONSE_DATAREF, writeBuffer);
 			
@@ -196,7 +197,7 @@ void XPLDevice::_processPacket(void)
 		}
 		else
 		{
-			sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",-02,\"%s\"", myBindings[refHandleCounter].xplaneDataRefName);
+			snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",-02,\"%s\"", myBindings[refHandleCounter].xplaneDataRefName);
 			_writePacket(XPLRESPONSE_DATAREF, writeBuffer);
 			myBindings[refHandleCounter].bindingActive = 0;
 			fprintf(errlog, "   requested DataRef not found, sorry. \n   I sent back data frame: %s\n", writeBuffer);
@@ -269,7 +270,7 @@ void XPLDevice::_processPacket(void)
 			myCommands[cmdHandleCounter].bindingActive = 1;
 			myCommands[cmdHandleCounter].deviceIndex = _referenceID;
 
-			sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",%i", cmdHandleCounter);
+			snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i", cmdHandleCounter);
 
 			_writePacket(XPLRESPONSE_COMMAND, writeBuffer);
 
@@ -285,7 +286,7 @@ void XPLDevice::_processPacket(void)
 		else
 
 		{
-			sprintf_s(writeBuffer, XPLMAX_PACKETSIZE, ",-02,\"%s\"", &readBuffer[2]);
+			snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",-02,\"%s\"", &readBuffer[2]);
 			_writePacket(XPLRESPONSE_COMMAND, writeBuffer);
 			myCommands[cmdHandleCounter].bindingActive = 0;
 			fprintf(errlog, "   requested Command not found, sorry. \n   I sent back data frame: %s\n", writeBuffer);

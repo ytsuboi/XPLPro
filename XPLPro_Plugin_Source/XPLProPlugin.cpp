@@ -11,11 +11,14 @@
 
 
 #include <stdio.h>
+#include <string.h>
 
-
-
-#define XPLM200
 #include "XPLProCommon.h"
+
+// Cross-platform compatibility for MSVC secure functions
+#if APL
+#define fopen_s(pFile, filename, mode) ((*(pFile) = fopen((filename), (mode))) == NULL)
+#endif
 #include "XPLMPlugin.h"
 #include "XPLMDataAccess.h"
 #include "XPLMDisplay.h"

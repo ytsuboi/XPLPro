@@ -1,7 +1,7 @@
 
 #pragma once
 
-#define XPL_VERSION 2302091
+#define XPL_VERSION 2604041
 #define XPLM200
 
 
