@@ -70,15 +70,17 @@ if(WIN32)
 
 elseif(APPLE)
     # macOS (APL)
-    # libconfig is required. Install via: brew install libconfig
-    # Static link so the plugin is self-contained (no dylib dependency for users)
+    # libconfig headers are obtained from Homebrew (brew install libconfig).
+    # For linking, we use a vendored universal (x86_64+arm64) libconfig.a at
+    # the project root, so Intel Homebrew's x86_64-only .a isn't a problem and
+    # distributed plugins are fully self-contained.
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBCONFIG REQUIRED libconfig)
 
-    # Find the static library (.a) for libconfig
-    find_library(LIBCONFIG_STATIC_LIB libconfig.a
-        HINTS ${LIBCONFIG_LIBRARY_DIRS} /usr/local/lib
-    )
+    set(LIBCONFIG_STATIC_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libconfig_mac.a")
+    if(NOT EXISTS "${LIBCONFIG_STATIC_LIB}")
+        message(FATAL_ERROR "Vendored universal libconfig static library not found: ${LIBCONFIG_STATIC_LIB}")
+    endif()
 
     target_compile_definitions(XPLProPlugin PRIVATE
         APL=1
@@ -107,7 +109,7 @@ elseif(APPLE)
         OUTPUT_NAME "mac"
         SUFFIX ".xpl"
         PREFIX ""
-        LINK_FLAGS "-flat_namespace -undefined suppress"
+        LINK_FLAGS "-undefined dynamic_lookup"
     )
 
 endif()
