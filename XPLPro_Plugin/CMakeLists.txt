@@ -6,7 +6,7 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version")
 endif()
 
-project(XPLProPlugin LANGUAGES CXX)
+project(XPLProPlugin LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -31,6 +31,7 @@ target_include_directories(XPLProPlugin PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/SDK/CHeaders/XPLM
     ${CMAKE_CURRENT_SOURCE_DIR}/SDK/CHeaders/Widgets
     ${CMAKE_CURRENT_SOURCE_DIR}/SDK/CHeaders/Wrappers
+    ${CMAKE_CURRENT_SOURCE_DIR}/libconfig-1.7.3/lib
 )
 
 # ---- Common definitions ----
@@ -55,11 +56,35 @@ if(WIN32)
         ${CMAKE_CURRENT_SOURCE_DIR}/SDK/Libraries/Win
     )
 
+    # ---- Build libconfig as a static library from source ----
+    set(LIBCONFIG_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libconfig-1.7.3/lib)
+    add_library(libconfig_static STATIC
+        ${LIBCONFIG_SRC_DIR}/grammar.c
+        ${LIBCONFIG_SRC_DIR}/libconfig.c
+        ${LIBCONFIG_SRC_DIR}/scanctx.c
+        ${LIBCONFIG_SRC_DIR}/scanner.c
+        ${LIBCONFIG_SRC_DIR}/strbuf.c
+        ${LIBCONFIG_SRC_DIR}/strvec.c
+        ${LIBCONFIG_SRC_DIR}/util.c
+        ${LIBCONFIG_SRC_DIR}/wincompat.c
+    )
+    set_target_properties(libconfig_static PROPERTIES LANGUAGE C)
+    target_include_directories(libconfig_static PRIVATE ${LIBCONFIG_SRC_DIR})
+    target_compile_definitions(libconfig_static PRIVATE
+        LIBCONFIG_STATIC
+        _CRT_SECURE_NO_WARNINGS
+        WIN32
+        YY_NO_UNISTD_H
+    )
+
+    target_compile_definitions(XPLProPlugin PRIVATE LIBCONFIG_STATIC)
+
     target_link_libraries(XPLProPlugin PRIVATE
         XPLM_64
         XPWidgets_64
-        ${CMAKE_CURRENT_SOURCE_DIR}/libconfig.lib
+        libconfig_static
         OpenGL32
+        Shlwapi
     )
 
     set_target_properties(XPLProPlugin PROPERTIES
