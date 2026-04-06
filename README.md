@@ -4,14 +4,12 @@ Fork of [XPLPro_Official by Giorgio Croci Candiani](https://github.com/GioCC/XPL
 
 Original plug-in is distributing on [Patreon](https://www.patreon.com/posts/introducing-xpl-82145446). [There](https://www.patreon.com/c/curiosityworkshop/posts) are several examples.
 
-I'm Trying to port XPL/Pro to macOS on here.
-
-Status:<br />
 ✅ Arm mac (tested on macOS 26.3.1, X-Plane 12)<br />
 ✅ Intel mac (tested on macOS 15.7.4, X-Plane 12)<br />
-❓ Windows (Probably, I'll test after complete porting.)
-
+✅ Windows (tested on Windows 11 Pro 25H2, X-Plane 12)<br />
 I don't have any motivation on Linux port.
+
+**You can download built binary from [Releases](https://github.com/ytsuboi/XPLPro/releases).**
 
 ## Configuration file (`XPLPro.cfg`)
 
