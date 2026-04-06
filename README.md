@@ -11,6 +11,22 @@ I don't have any motivation on Linux port.
 
 **You can download built binary from [Releases](https://github.com/ytsuboi/XPLPro/releases).**
 
+## macOS Gatekeeper warning
+
+![](./Gatekeeper_warning.png)
+
+Because the plugin binary is not signed with an Apple Developer ID, macOS may show an **"Apple could not verify"** dialog the first time the plugin is loaded. To resolve this, remove the quarantine attribute from the file:
+
+```bash
+xattr -d com.apple.quarantine mac.xpl
+```
+
+![](Gatekeeper_warning_solution.png)
+
+Alternatively, go to **System Settings → Privacy & Security** and click **"Allow Anyway"** after the first blocked attempt.
+
+This only needs to be done once per downloaded binary.
+
 ## Configuration file (`XPLPro.cfg`)
 
 The plugin reads its settings from a configuration file located at:
