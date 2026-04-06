@@ -399,4 +399,5 @@ CLAUDE.md
 
 # CMake build directories
 build_mac/
+build_win/
 build/
