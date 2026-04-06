@@ -9,17 +9,13 @@
 #include "XPLMDisplay.h"
 #include "XPLMGraphics.h"
 #include "XPLMMenus.h"
-
 #include "XPWidgets.h"
 #include "XPStandardWidgets.h"
-
 #include "XPLMUtilities.h"
 #include "XPLMProcessing.h"
-
 #include "XPLMCamera.h"
 #include "XPUIGraphics.h"
 #include "XPWidgetUtils.h"
-
 
 #include "serialclass.h"
 #include "Config.h"
@@ -106,7 +102,6 @@ void statusDrawWindowCallback(
 		if (myBindings[lastRefReceived].xplaneDataRefTypeID & xplmType_FloatArray)	sprintf(tstring, "Last Dataref Received: %s, Element: %i, %f", myBindings[lastRefReceived].xplaneDataRefName, lastRefElementReceived, myBindings[lastRefReceived].currentReceivedf[lastRefElementReceived]);	
 	//	if (myBindings[lastRefReceived].xplaneDataRefTypeID & xplmType_Data)			sprintf(tstring, "Last Dataref Action: %s, %s", myBindings[lastRefReceived].xplaneDataRefName, myBindings[lastRefReceived].xplaneCurrentReceiveds);
 		XPLMDrawString(color, left + 5, top - 90, tstring, NULL, xplmFont_Basic);
-		
 	}
 	
 	if (lastRefSent >= 0)
@@ -120,7 +115,6 @@ void statusDrawWindowCallback(
 		if (myBindings[lastRefSent].xplaneDataRefTypeID & xplmType_FloatArray)	sprintf(tstring, "Last Dataref Sent: %s, Element: %i, %f", myBindings[lastRefSent].xplaneDataRefName, lastRefElementSent, myBindings[lastRefSent].currentSentf[lastRefElementSent]);	
 		if (myBindings[lastRefSent].xplaneDataRefTypeID & xplmType_Data)		sprintf(tstring, "Last Dataref Sent: %s, %s", myBindings[lastRefSent].xplaneDataRefName, myBindings[lastRefSent].currentSents[lastRefElementSent]);
 		XPLMDrawString(color, left + 5, top - 105, tstring, NULL, xplmFont_Basic);
-		
 	}
 
 	if (lastCmdAction >= 0)
@@ -128,9 +122,6 @@ void statusDrawWindowCallback(
 		sprintf(tstring, "Last Command Action: %s, accumulator: %i", myCommands[lastCmdAction].xplaneCommandName, myCommands[lastCmdAction].accumulator);
 		XPLMDrawString(color, left + 5, top - 120, tstring, NULL, xplmFont_Basic);
 	}
-
-	
-
 }
 
 int statusWindowActive(void)
@@ -169,4 +160,3 @@ void statusHandleKeyCallback(
 	int                  losingFocus)
 {
 }
-

@@ -9,17 +9,21 @@ extern FILE* errlog;				// Used for logging problems
 serialClass::serialClass()
 {
 
-
 }
 
 serialClass::~serialClass()
 {
     shutDown();
-
 }
 
 #if IBM
 // ===================== Windows implementation =====================
+
+int serialClass::resolvePortName(int portNumber)
+{
+    sprintf_s(portName, sizeof(portName), "\\\\.\\COM%u", portNumber);
+    return 0;
+}
 
 int serialClass::begin(int portNumber)
 {
@@ -28,9 +32,7 @@ int serialClass::begin(int portNumber)
     this->status;
 
     //Form the Raw device name
-
-
-    sprintf_s(portName, sizeof(portName), "\\\\.\\COM%u", portNumber);
+    resolvePortName(portNumber);
 
     //Try to connect to the given port throuh CreateFile
     this->hSerial = CreateFileA(portName,
@@ -99,7 +101,6 @@ int serialClass::shutDown(void)
         //Close the serial handler
         CloseHandle(this->hSerial);
         fprintf(errlog, "...Closing port %s\n", portName);
-
     }
     return 0;
 }
@@ -136,12 +137,9 @@ int serialClass::readData(char* buffer, size_t nbChar)
         {
             return bytesRead;
         }
-
     }
-
     //If nothing has been read, or that an error was detected return 0
     return 0;
-
 }
 
 
@@ -172,33 +170,19 @@ bool serialClass::IsConnected(void)
 
 #endif // IBM
 
-
 #if APL
 // ===================== macOS implementation =====================
 
-int serialClass::begin(int portNumber)
+int serialClass::resolvePortName(int portNumber)
 {
-    this->connected = false;
-
-    // On macOS, serial ports are /dev/tty.usbmodem* or /dev/tty.usbserial*
-    // portNumber is used as an index into discovered ports
-    // We scan /dev/ for matching entries
-
     DIR* dir = opendir("/dev");
-    if (!dir)
-    {
-        fprintf(errlog, "Serial: Unable to open /dev directory\n");
-        return -1;
-    }
+    if (!dir) return -1;
 
     int currentIndex = 0;
     struct dirent* entry;
-    char devicePath[256];
-    bool found = false;
 
     while ((entry = readdir(dir)) != NULL)
     {
-        // Match Arduino-typical serial device names on macOS
         if (strncmp(entry->d_name, "tty.usbmodem", 12) == 0 ||
             strncmp(entry->d_name, "tty.usbserial", 13) == 0 ||
             strncmp(entry->d_name, "tty.wchusbserial", 16) == 0)
@@ -206,33 +190,38 @@ int serialClass::begin(int portNumber)
             currentIndex++;
             if (currentIndex == portNumber)
             {
-                snprintf(devicePath, sizeof(devicePath), "/dev/%s", entry->d_name);
-                found = true;
-                break;
+                snprintf(portName, sizeof(portName), "/dev/%s", entry->d_name);
+                closedir(dir);
+                return 0;
             }
         }
     }
     closedir(dir);
+    return -1;
+}
 
-    if (!found)
+int serialClass::begin(int portNumber)
+{
+    this->connected = false;
+
+    // Resolve port name first
+    if (resolvePortName(portNumber) != 0)
     {
         return -1;
     }
 
-    snprintf(portName, sizeof(portName), "%s", devicePath);
-
     // Open the serial port
-    this->fd = open(devicePath, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    this->fd = open(portName, O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (this->fd == -1)
     {
-        fprintf(errlog, "Serial: Unable to open port %s\n", devicePath);
+        fprintf(errlog, "Serial: Unable to open port %s\n", portName);
         return -1;
     }
 
     // Prevent other processes from using this port
     if (ioctl(this->fd, TIOCEXCL) == -1)
     {
-        fprintf(errlog, "Serial: Unable to set exclusive access on %s\n", devicePath);
+        fprintf(errlog, "Serial: Unable to set exclusive access on %s\n", portName);
         close(this->fd);
         this->fd = -1;
         return -1;
@@ -246,7 +235,7 @@ int serialClass::begin(int portNumber)
     struct termios options;
     if (tcgetattr(this->fd, &options) == -1)
     {
-        fprintf(errlog, "Serial: Unable to get port attributes for %s\n", devicePath);
+        fprintf(errlog, "Serial: Unable to get port attributes for %s\n", portName);
         close(this->fd);
         this->fd = -1;
         return -1;
@@ -273,7 +262,7 @@ int serialClass::begin(int portNumber)
     // Apply settings
     if (tcsetattr(this->fd, TCSANOW, &options) == -1)
     {
-        fprintf(errlog, "Serial: Unable to set port attributes for %s\n", devicePath);
+        fprintf(errlog, "Serial: Unable to set port attributes for %s\n", portName);
         close(this->fd);
         this->fd = -1;
         return -1;
@@ -307,7 +296,6 @@ int serialClass::shutDown(void)
     return 0;
 }
 
-
 int serialClass::readData(char* buffer, size_t nbChar)
 {
     if (!this->connected || this->fd == -1) return 0;
@@ -326,10 +314,8 @@ int serialClass::readData(char* buffer, size_t nbChar)
             return (int)bytesRead;
         }
     }
-
     return 0;
 }
-
 
 bool serialClass::writeData(const char* buffer, size_t nbChar)
 {

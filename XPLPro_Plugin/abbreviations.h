@@ -11,7 +11,6 @@ public:
 	int convertString(char* inString);
 	
 private:
-
 	FILE* _abbFile;
 
 };

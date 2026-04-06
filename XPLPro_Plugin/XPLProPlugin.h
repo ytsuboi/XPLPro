@@ -1,10 +1,7 @@
-
 #pragma once
 
-#define XPL_VERSION 2604051
+#define XPL_VERSION 2604061
 #define XPLM200
-
-
 
 float	MyFlightLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
 

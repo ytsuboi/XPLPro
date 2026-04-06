@@ -1,36 +1,27 @@
 #include <string.h>
 
 #include "XPLProCommon.h"
-
 #include "XPLMPlugin.h"
 #include "XPLMDataAccess.h"
 #include "XPLMDisplay.h"
 #include "XPLMGraphics.h"
 #include "XPLMMenus.h"
-
 #include "XPWidgets.h"
 #include "XPStandardWidgets.h"
-
 #include "XPLMUtilities.h"
 #include "XPLMProcessing.h"
-
 #include "XPLMCamera.h"
 #include "XPUIGraphics.h"
 #include "XPWidgetUtils.h"
-
-
 #include "XPLProPlugin.h"
 #include "XPLDevice.h"
-
 #include "DataTransfer.h"
+#include "Config.h"
 
 #include <ctime>
 
-
-
 int refHandleCounter = 0;
 int cmdHandleCounter = 0;
-
 
 long int packetsSent;
 long int packetsReceived;
@@ -42,7 +33,7 @@ extern FILE* serialLogFile;
 extern float elapsedTime;
 extern int lastRefSent;
 extern int lastRefElementSent;
-
+extern Config* XPLConfig;
 
 CommandBinding myCommands[XPL_MAXCOMMANDS_PC];
 DataRefBinding myBindings[XPL_MAXDATAREFS_PC];
@@ -57,7 +48,6 @@ void disengageDevices(void)
 
 	for (int i = 0; i < XPLDEVICES_MAXDEVICES; i++)
 	{
-
 		if (myXPLDevices[i])
 		{
 			myXPLDevices[i]->port->shutDown();
@@ -89,7 +79,6 @@ void disengageDevices(void)
 			free(myBindings[i].currentSents[0]);
 			myBindings[i].currentSents[0] = NULL;
 		}
-
 	}
 
 	refHandleCounter = 0;
@@ -101,12 +90,9 @@ void disengageDevices(void)
 		myCommands[i].Handle = -1;
 		myCommands[i].xplaneCommandHandle = NULL;
 		myCommands[i].xplaneCommandName[0] = NULL;
-
 	}
 
 	cmdHandleCounter = 0;
-
-
 }
 
 /*
@@ -119,7 +105,6 @@ void engageDevices(void)
 	activateDevices();
 	//_updateDataRefs(1);				// 1 represents to force updates to the devices
 	//sendRefreshRequest();
-
 }
 
 /**************************************************************************************/
@@ -127,7 +112,6 @@ void engageDevices(void)
 /**************************************************************************************/
 void _updateDataRefs(int forceUpdate)
 {
-
 	int newVall;
 	float newValf;
 	double newValD;
@@ -135,13 +119,10 @@ void _updateDataRefs(int forceUpdate)
 	char   writeBuffer[XPLMAX_PACKETSIZE];
 	char   stringBuffer[XPLMAX_PACKETSIZE - 5];
 
-
-
 	for (int i = 0; i < refHandleCounter; i++)
 	{
 		if (myBindings[i].bindingActive && myBindings[i].readFlag[0])					// todo:  this needs to check all possible readFlags
 		{
-			
 		//	if (elapsedTime - myXPLDevices[myBindings[i].deviceIndex].lastSendTime < myXPLDevices[myBindings[i].deviceIndex].minTimeBetweenFrames/1000 && !forceUpdate)
 	//			break;
 			if (myBindings[i].xplaneDataRefTypeID & xplmType_Int)						// process for datarefs of type int
@@ -155,11 +136,8 @@ void _updateDataRefs(int forceUpdate)
 					snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%ld", i, newVall);
 					myXPLDevices[myBindings[i].deviceIndex]->_writePacket(XPLCMD_DATAREFUPDATEINT, writeBuffer);
 					myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
-
 						//   fprintf(errlog, "using packet: %s\r\n", writeBuffer);
-
 				}
-
 			}
 			
 			if (myBindings[i].xplaneDataRefTypeID & xplmType_IntArray)						// process for datarefs of type int Array
@@ -182,10 +160,8 @@ void _updateDataRefs(int forceUpdate)
 				}
 			}
 				
-				
 			if (myBindings[i].xplaneDataRefTypeID & xplmType_Float)						// process for datarefs of type float
 			{
-
 				newValf = (float)XPLMGetDataf(myBindings[i].xplaneDataRefHandle);
 
 					// fprintf(errlog, "updating dataRef %s with value %f...\r\n  ", myBindings[i].xplaneDataRefName, newValf);
@@ -198,18 +174,13 @@ void _updateDataRefs(int forceUpdate)
 					snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%f", i, newValf);
 					myXPLDevices[myBindings[i].deviceIndex]->_writePacket(XPLCMD_DATAREFUPDATEFLOAT, writeBuffer);
 					myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
-
-						//   	   fprintf(errlog, "using packet: %s\r\n", writeBuffer);
-
+					//   	   fprintf(errlog, "using packet: %s\r\n", writeBuffer);
 				}
-				
 			}
 
 
 			if (myBindings[i].xplaneDataRefTypeID & xplmType_FloatArray)						// process for datarefs of type float (array)
 			{
-				
-
 				for (int j = 0; j < XPLMAX_ELEMENTS; j++)
 				{
 					XPLMGetDatavf(myBindings[i].xplaneDataRefHandle, &newValf, j, 1);
@@ -225,15 +196,12 @@ void _updateDataRefs(int forceUpdate)
 						myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
 
 						//  fprintf(errlog, "using packet: %s\r\n", writeBuffer);
-
 					}
 				}
-
 			}
 			
 			if (myBindings[i].xplaneDataRefTypeID & xplmType_Double)						// process for datarefs of type double
 			{
-
 				newValD = (double)XPLMGetDatad(myBindings[i].xplaneDataRefHandle);
 
 					// fprintf(errlog, "updating dataRef %s with value %f...\r\n  ", myBindings[i].xplaneDataRefName, newValf);
@@ -246,16 +214,12 @@ void _updateDataRefs(int forceUpdate)
 					snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",%i,%f", i, newValD);
 					myXPLDevices[myBindings[i].deviceIndex]->_writePacket(XPLCMD_DATAREFUPDATEFLOAT, writeBuffer);
 					myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
-
 						//   	   fprintf(errlog, "using packet: %s\r\n", writeBuffer);
-
 				}
-					
 			}
 
 			if (myBindings[i].xplaneDataRefTypeID & xplmType_Data)						// process for datarefs of type Data (strings)
 			{
-
 				newVall = (long int)XPLMGetDatab(myBindings[i].xplaneDataRefHandle, stringBuffer, 0, XPLMAX_PACKETSIZE - 5);
 					//stringBuffer[newVall] = 0;		// null terminate
 					//   fprintf(errlog, "updating dataRef %s with value %i...\r\n  ", myBindings[i].xplaneDataRefName, newVall);
@@ -271,16 +235,10 @@ void _updateDataRefs(int forceUpdate)
 					myXPLDevices[myBindings[i].deviceIndex]->lastSendTime = elapsedTime;
 
 					//	fprintf(errlog, "Updating dataref %s with packet: %s length: %i\r\n", myBindings[i].xplaneDataRefName, writeBuffer, newVall);
-					
-					
 				}
-
 			}
 		}
-
 	}
-
-
 }
 
 /*
@@ -288,23 +246,15 @@ void _updateDataRefs(int forceUpdate)
  */
 void _updateCommands(void)
 {
-	
-	
 	for (int i = 0; i < cmdHandleCounter; i++)
 	{
 		if (myCommands[i].bindingActive && myCommands[i].accumulator > 0)
 		{
-			
 			XPLMCommandOnce(myCommands[i].xplaneCommandHandle);
 			myCommands[i].accumulator--;
 			if (myCommands[i].accumulator < 0) myCommands[i].accumulator = 0;
-			
-			
 		}
-
 	}
-
-
 }
 
 /**************************************************************************************/
@@ -312,7 +262,6 @@ void _updateCommands(void)
 /**************************************************************************************/
 void activateDevices(void)
 {
-	
 	fprintf(errlog, "XPLPro:  Activating Devices... \n");
 
 	for (int i = 0; i < XPLDEVICES_MAXDEVICES; i++)
@@ -321,15 +270,12 @@ void activateDevices(void)
 
 		fprintf(errlog, "Requesting dataRef or Command registrations from port %s on device [%i]: %s\n", myXPLDevices[i]->port->portName, i, myXPLDevices[i]->deviceName);
 		myXPLDevices[i]->_writePacket(XPLCMD_SENDREQUEST, "");
-				
 	}
-	
 }
 
 /*
    findDevices -- Scan for XPLPro devices and fills array with active devices
 */
-
 int findDevices(void)
 {
 	time_t startTime;
@@ -341,17 +287,27 @@ int findDevices(void)
 	for (unsigned int i = 1; i < 256; i++)
 	{
 		port = new serialClass;
-		
+
+		// Resolve the port name first, then check the ignore list before opening
+		if (port->resolvePortName(i) != 0)
+		{
+			delete port;
+			continue;
+		}
+		if (XPLConfig && XPLConfig->isPortIgnored(port->portName))
+		{
+			delete port;
+			continue;
+		}
+
 		if (port->begin(i) == i)
 		{
-
 			fprintf(errlog, "\nFound valid port %s.  Attemping poll for XPLPro device... ", port->portName);
 			myXPLDevices[validPorts] = new XPLDevice(validPorts);
 			myXPLDevices[validPorts]->port = port;
 
 			if (myXPLDevices[validPorts]->_writePacket(XPLCMD_SENDNAME, ""))
 				fprintf(errlog, "Valid write operation, seems OK\n");
-
 
 			startTime = time(NULL);
 
@@ -374,23 +330,18 @@ int findDevices(void)
 
 				validPorts++;
 			}
-
 		}
 		else
 		{
 			port->shutDown();
 			delete port;
 		}
-
 	}
-	
-
 	//delete myXPLDevices[validPorts];
 	XPLMDebugString("  Done Searching Com Ports\n");
 	fprintf(errlog, "Total of %i compatible devices were found.  \n\n", validPorts);
 	return 0;
 }
-
 
 void _processSerial()
 {
@@ -409,7 +360,6 @@ void _processSerial()
 /*
 	 sendRefreshRequest -- request writable datarefs be refreshed
 */
-
 void sendRefreshRequest(void)
 {
 	for (int i = 0; i < XPLDEVICES_MAXDEVICES; i++)
@@ -417,7 +367,6 @@ void sendRefreshRequest(void)
 		if (myXPLDevices[i])
 			if (myXPLDevices[i] && myXPLDevices[i]->RefsLoaded)  myXPLDevices[i]->_writePacket(XPLREQUEST_REFRESH, "");
 	}
-
 }
 
 void sendExitMessage(void)
@@ -429,10 +378,7 @@ void sendExitMessage(void)
 		if (myXPLDevices[i])
 			if (myXPLDevices[i] && myXPLDevices[i]->RefsLoaded)  myXPLDevices[i]->_writePacket(XPL_EXITING, "");
 	}
-
 }
-
-
 
 /*
 *   reloadDevices
@@ -441,14 +387,9 @@ void reloadDevices(void)
 {
 	fprintf(errlog, "XPLPro device requested to reset and reload devices.  \n");
 
-
 	disengageDevices();				// just to make sure we are cleared
 	engageDevices();
-
-
-
 }
-
 
 /*
  * map functions

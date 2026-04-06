@@ -38,18 +38,19 @@ private:
     struct termios originalTTYAttrs;
 #endif
 
-
-
 public:
     //Initialize Serial communication with the given COM port
     serialClass();
     //Close the connection
     ~serialClass();
 
+    // Resolve the port name for the given index without opening it.
+    // Returns 0 on success (portName is filled in), -1 if no port at this index.
+    int resolvePortName(int portNumber);
+
     int begin(int portNumber);
     int shutDown(void);
     int findAvailablePort(void);
-
 
     //Read data in a buffer, if nbChar is greater than the
     //maximum number of bytes available, it will return only the
@@ -64,5 +65,4 @@ public:
 
     char   portName[64];					// port name (longer for macOS /dev/tty.* paths)
     int valid;
-
 };

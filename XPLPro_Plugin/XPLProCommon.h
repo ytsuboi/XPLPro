@@ -22,43 +22,41 @@
 #define XPLMAX_ELEMENTS 10
 #define XPL_TIMEOUT_SECONDS 3
 
-#define XPLRESPONSE_NAME           'n'       
-#define XPLRESPONSE_DATAREF        'D'   // %3.3i%s    dataref handle, dataref name 
-#define XPLRESPONSE_COMMAND        'C'   // %3.3i%s    command handle, command name
-#define XPLRESPONSE_VERSION		   'v'	// %3.3i%u	   customer build ID, version
-#define XPLCMD_PRINTDEBUG          'g'
-#define XPLCMD_RESET               'z'
-#define XPLCMD_SPEAK				's'
-#define XPLCMD_SENDNAME            'N'
-#define XPLCMD_FLIGHTLOOPPAUSE		'p'		// stop flight loop while we register
-#define XPLCMD_FLIGHTLOOPRESUME		'q'		// 
-#define XPLREQUEST_REGISTERDATAREF 'b'   //  dataref name
-#define XPLREQUEST_REGISTERCOMMAND 'm'  // name of the command to register
-#define XPLREQUEST_NOREQUESTS      'c'   // nothing to request
-#define XPLREQUEST_REFRESH         'd'	//  the plugin will call this once xplane is loaded in order to get fresh updates from arduino handles that write
-#define XPLREQUEST_UPDATES         'r'          // arduino is asking the plugin to update the specified dataref with rate and divider parameters
-#define XPLREQUEST_UPDATESARRAY     't'
-#define XPLREQUEST_SCALING          'u'          // arduino requests the plugin apply scaling to the dataref values
-#define XPLREQUEST_DATAREFVALUE 'e'
+#define XPLRESPONSE_NAME                'n'       
+#define XPLRESPONSE_DATAREF             'D'  // %3.3i%s    dataref handle, dataref name 
+#define XPLRESPONSE_COMMAND             'C'  // %3.3i%s    command handle, command name
+#define XPLRESPONSE_VERSION             'v'	 // %3.3i%u	   customer build ID, version
+#define XPLCMD_PRINTDEBUG               'g'
+#define XPLCMD_RESET                    'z'
+#define XPLCMD_SPEAK				    's'
+#define XPLCMD_SENDNAME                 'N'
+#define XPLCMD_FLIGHTLOOPPAUSE		    'p'	 // stop flight loop while we register
+#define XPLCMD_FLIGHTLOOPRESUME		    'q'	 // 
+#define XPLREQUEST_REGISTERDATAREF      'b'  //  dataref name
+#define XPLREQUEST_REGISTERCOMMAND      'm'  // name of the command to register
+#define XPLREQUEST_NOREQUESTS           'c'  // nothing to request
+#define XPLREQUEST_REFRESH              'd'  //  the plugin will call this once xplane is loaded in order to get fresh updates from arduino handles that write
+#define XPLREQUEST_UPDATES              'r'  // arduino is asking the plugin to update the specified dataref with rate and divider parameters
+#define XPLREQUEST_UPDATESARRAY         't'
+#define XPLREQUEST_SCALING              'u'  // arduino requests the plugin apply scaling to the dataref values
+#define XPLREQUEST_DATAREFVALUE         'e'
 
-#define XPLCMD_DATAREFUPDATEINT			'1'
-#define XPLCMD_DATAREFUPDATEFLOAT		'2'
+#define XPLCMD_DATAREFUPDATEINT         '1'
+#define XPLCMD_DATAREFUPDATEFLOAT       '2'
 #define XPLCMD_DATAREFUPDATEINTARRAY	'3'
 #define XPLCMD_DATAREFUPDATEFLOATARRAY	'4'
-#define XPLCMD_DATAREFUPDATESTRING		'9'
+#define XPLCMD_DATAREFUPDATESTRING  	'9'
 
-#define XPLCMD_SENDREQUEST         'Q'
+#define XPLCMD_SENDREQUEST              'Q'
 
-#define XPLCMD_COMMANDSTART         'i'
-#define XPLCMD_COMMANDEND           'j'
-#define XPLCMD_COMMANDTRIGGER       'k'    //  command handle, number of triggers
-#define XPLCMD_SENDVERSION          'v'     // get current build version from arduino device
+#define XPLCMD_COMMANDSTART             'i'
+#define XPLCMD_COMMANDEND               'j'
+#define XPLCMD_COMMANDTRIGGER           'k'  //  command handle, number of triggers
+#define XPLCMD_SENDVERSION              'v'  // get current build version from arduino device
 
-
-#define XPL_EXITING					'X'		// xplane is closing
+#define XPL_EXITING					    'X'	 // xplane is closing
 
 #define XPLTYPE_XPLPRO 1
-
 
 #define XPL_READ		1
 #define XPL_WRITE       2

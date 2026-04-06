@@ -51,8 +51,6 @@ struct DataRefBinding
 	double			currentReceivedD[XPLMAX_ELEMENTS];	// current double value sent to Xplane
 	
 	char*			currentSents[XPLMAX_ELEMENTS];	// dynamically allocated string buffer for string types.
-
-
 };
 
 struct CommandBinding
@@ -66,5 +64,4 @@ struct CommandBinding
 	char           xplaneCommandName[80];		// character name of xplane dataref
 	int			   accumulator;
 	//int            xplaneCurrentReceived;   // Current value sent to Xplane
-
 };

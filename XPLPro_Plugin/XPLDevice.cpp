@@ -7,13 +7,10 @@
 #include "XPLMDisplay.h"
 #include "XPLMGraphics.h"
 #include "XPLMMenus.h"
-
 #include "XPWidgets.h"
 #include "XPStandardWidgets.h"
-
 #include "XPLMUtilities.h"
 #include "XPLMProcessing.h"
-
 #include "XPLMCamera.h"
 #include "XPUIGraphics.h"
 #include "abbreviations.h"
@@ -54,28 +51,22 @@ XPLDevice::XPLDevice(int inReference)
 	_flightLoopPause = 0;
 
 	minTimeBetweenFrames = XPL_MILLIS_BETWEEN_FRAMES_DEFAULT;
-
 }
 
 XPLDevice::~XPLDevice()
 {
 	//if (Port)  delete Port;
-		
 }
 
 int XPLDevice::isActive(void)
 {
-
 	return _active;
-
 }
 
 void XPLDevice::setActive(int flag)
 {
 	_active = flag;
-
 }
-
 
 void XPLDevice::processSerial(void)
 {
@@ -86,13 +77,11 @@ void XPLDevice::processSerial(void)
 			readBuffer[bufferPosition + 1] = '\0';
 			//fprintf(errlog, "Buffer currently: %s\r\n", readBuffer);
 
-
 			if (readBuffer[0] != XPL_PACKETHEADER)
 			{
 				readBuffer[0] = '\0';
 				bufferPosition = -1;
 			}
-
 
 			if (readBuffer[0] == XPL_PACKETHEADER
 				&& readBuffer[bufferPosition] == XPL_PACKETTRAILER)
@@ -104,27 +93,21 @@ void XPLDevice::processSerial(void)
 				bufferPosition = -1;
 			}
 
-
 			if (strlen(readBuffer) >= XPLMAX_PACKETSIZE)
 			{
 				readBuffer[0] = '\0';    // packet size exceeded / bad packet
 				bufferPosition = -1;
 			}
 
-
 			bufferPosition++;
 			readBuffer[bufferPosition] = '\0';
 		}
 	
 	} while (_flightLoopPause);
-
 }
-
-
 
 void XPLDevice::_processPacket(void)
 {
-
 	char   writeBuffer[XPLMAX_PACKETSIZE];
 	char   speechBuf[XPLMAX_PACKETSIZE];
 
@@ -135,23 +118,17 @@ void XPLDevice::_processPacket(void)
 
 	packetsReceived++;
 
-
 	if (!port) return;
-
 //		fprintf(errlog, "_processPacket:  %s \r\n", readBuffer);
 
 	if (serialLogFile) fprintf(serialLogFile, "et: %5.0f rx port: %s length: %3.3i buffer:         %s\n", elapsedTime, port->portName, (int)strlen(readBuffer), readBuffer);
 
-
 	readBuffer[bufferPosition+1] = 0;			// terminate the string just in case
-
 
 	switch (readBuffer[1])
 	{
-
 	case XPLREQUEST_REGISTERDATAREF:
 	{
-		
 		_parseString(myBindings[refHandleCounter].xplaneDataRefName, readBuffer,2, 80 );
 		//_parseInt(&myBindings[refHandleCounter].RWMode, readBuffer, 3);
 		
@@ -191,8 +168,6 @@ void XPLDevice::_processPacket(void)
 					fprintf(errlog, "      This dataref returns that it is of type: data ***Currently supported only for data sent from xplane (read only)***\n");
 					myBindings[refHandleCounter].currentSents[0] = (char*)malloc(XPLMAX_PACKETSIZE - 5);
 				}
-			
-
 			refHandleCounter++;
 		}
 		else
@@ -203,14 +178,10 @@ void XPLDevice::_processPacket(void)
 			fprintf(errlog, "   requested DataRef not found, sorry. \n   I sent back data frame: %s\n", writeBuffer);
 			refHandleCounter++;			// to avoid timeout
 		}
-
-
 		break;
 	}
 
 	case XPLREQUEST_UPDATES:
-		
-
 		_parseInt(&bindingNumber, readBuffer, 2);
 		_parseInt(&rate, readBuffer, 3);
 		_parseFloat(&precision, readBuffer, 4);
@@ -223,8 +194,6 @@ void XPLDevice::_processPacket(void)
 		break;
 
 	case XPLREQUEST_UPDATESARRAY:
-		
-
 		_parseInt(&bindingNumber, readBuffer, 2);
 		_parseInt(&rate, readBuffer, 3);
 		_parseFloat(&precision, readBuffer, 4);
@@ -261,8 +230,6 @@ void XPLDevice::_processPacket(void)
 				myCommands[cmdHandleCounter].xplaneCommandHandle = XPLMFindCommand(myCommands[cmdHandleCounter].xplaneCommandName);
 		}
 
-		
-
 		if (myCommands[cmdHandleCounter].xplaneCommandHandle != NULL)
 		{
 			fprintf(errlog, "I found that Command!\n");
@@ -284,7 +251,6 @@ void XPLDevice::_processPacket(void)
 			cmdHandleCounter++;
 		}
 		else
-
 		{
 			snprintf(writeBuffer, XPLMAX_PACKETSIZE, ",-02,\"%s\"", &readBuffer[2]);
 			_writePacket(XPLRESPONSE_COMMAND, writeBuffer);
@@ -292,8 +258,6 @@ void XPLDevice::_processPacket(void)
 			fprintf(errlog, "   requested Command not found, sorry. \n   I sent back data frame: %s\n", writeBuffer);
 			cmdHandleCounter++;
 		}
-
-
 		break;
 	}
 
@@ -302,7 +266,6 @@ void XPLDevice::_processPacket(void)
 	case XPLCMD_DATAREFUPDATEFLOATARRAY:
 	case XPLCMD_DATAREFUPDATEINTARRAY:
 	{
-		
 		float tempFloat;
 		int tempInt;
 		int tempElement;
@@ -355,7 +318,6 @@ void XPLDevice::_processPacket(void)
 			myBindings[bindingNumber].currentSentf[0] = tempFloat;
 			
 		}
-
 		
 		if (myBindings[bindingNumber].xplaneDataRefTypeID & xplmType_IntArray)
 		{
@@ -389,18 +351,13 @@ void XPLDevice::_processPacket(void)
 			myBindings[bindingNumber].currentSentf[tempElement] = tempFloat;
 			lastRefElementSent = tempElement;
 		}
-		
-
 		break;
-		
 	}
 
 	case XPLCMD_COMMANDSTART:
 	case XPLCMD_COMMANDEND:
 	case XPLCMD_COMMANDTRIGGER:
 	{
-
-		
 		int  commandNumber;  
 		int  triggerCount;
 		
@@ -409,22 +366,16 @@ void XPLDevice::_processPacket(void)
 
 		fprintf(errlog, "Command received for myCommands[%i].  cmdHandleCounter = %i. triggerCount: %i.  readBuffer: %s\n", commandNumber, cmdHandleCounter, triggerCount, readBuffer);
 
-
 		if (commandNumber < 0 || commandNumber >= cmdHandleCounter) break;
 
 		lastCmdAction = commandNumber;
 
 		if (readBuffer[1] == XPLCMD_COMMANDTRIGGER)
 		{
-
-			
 		//	fprintf(errlog, "Device is sending Command %i %i times \n", commandNumber, triggerCount);
 			myCommands[commandNumber].accumulator += triggerCount-1;
 
 			XPLMCommandOnce(myCommands[commandNumber].xplaneCommandHandle);
-
-				
-
 
 			break;
 		}
@@ -463,14 +414,12 @@ void XPLDevice::_processPacket(void)
 
 	case XPLRESPONSE_NAME:
 	{
-		
 		_parseString(deviceName, readBuffer, 2, 80);
 		setActive(1);
 		
 		break;
 	}
 
-		
 	case XPLCMD_FLIGHTLOOPPAUSE:
 	{
 		_flightLoopPause = 1;
@@ -513,7 +462,6 @@ int XPLDevice::_parseString(char *outBuffer, char *inBuffer, int parameter, int 
 	
 	for (int i = 1; i < parameter; i++)
 	{
-
 		while (inBuffer[pos] != ',' && inBuffer[pos] != NULL ) pos++;
 		pos++;
 
@@ -541,10 +489,8 @@ int XPLDevice::_parseInt(int *outTarget, char *inBuffer, int parameter)
 
 	for (int i = 1; i < parameter; i++)
 	{
-
 		while (inBuffer[pos] != ',' && inBuffer[pos] != NULL) pos++;
 		pos++;
-
 	}
 	cBeg = pos;
 
@@ -558,11 +504,9 @@ int XPLDevice::_parseInt(int *outTarget, char *inBuffer, int parameter)
 
 	inBuffer[pos] = holdChar;
 
-	
-
 	return 0;
-
 }
+
 int XPLDevice::_parseInt(long int* outTarget, char* inBuffer, int parameter)
 {
 	int cBeg;
@@ -587,10 +531,7 @@ int XPLDevice::_parseInt(long int* outTarget, char* inBuffer, int parameter)
 
 	inBuffer[pos] = holdChar;
 
-
-
 	return 0;
-
 }
 
 int XPLDevice::_parseFloat(float* outTarget, char* inBuffer, int parameter)
@@ -605,6 +546,7 @@ int XPLDevice::_parseFloat(float* outTarget, char* inBuffer, int parameter)
 		pos++;
 
 	}
+
 	cBeg = pos;
 
 	while (inBuffer[pos] != ',' && inBuffer[pos] != NULL && inBuffer[pos] != XPL_PACKETTRAILER) pos++;
@@ -617,10 +559,7 @@ int XPLDevice::_parseFloat(float* outTarget, char* inBuffer, int parameter)
 
 	inBuffer[pos] = holdChar;
 
-
-
 	return 0;
-
 }
 
 int XPLDevice::_writePacket(char cmd, char* packet)
@@ -631,8 +570,6 @@ int XPLDevice::_writePacket(char cmd, char* packet)
 
 
 	if (serialLogFile) fprintf(serialLogFile, "et: %5.0f tx port: %s length: %3.3zi packet: %s\n", elapsedTime, port->portName, strlen(writeBuffer), writeBuffer);
-
-
 
 	if (!port->writeData(writeBuffer, strlen(writeBuffer)))
 	{

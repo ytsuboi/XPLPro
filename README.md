@@ -13,6 +13,59 @@ Status:<br />
 
 I don't have any motivation on Linux port.
 
+## Configuration file (`XPLPro.cfg`)
+
+The plugin reads its settings from a configuration file located at:
+
+```
+X-Plane 12/Resources/plugins/XPLPro/XPLPro.cfg
+```
+
+The file uses the [libconfig](https://hyperrealm.github.io/libconfig/) format.
+All settings are placed inside an `XPLProPlugin` group.
+
+### Syntax rules
+
+- Groups are enclosed in `{ }` and end with a `;`
+- String values are enclosed in double quotes (`"..."`)
+- Lists (arrays of strings) use parentheses: `( "a", "b" )`
+- Integer values are written without quotes
+- Comments are C-style: `//` for single-line, `/* ... */` for block
+
+### Available settings
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `logSerialData` | integer | `0` | Set to `1` to enable serial data logging to `XPLProSerial.log`. Useful for debugging communication with Arduino devices. Can also be toggled from the plugin menu in X-Plane. |
+| `ignoreSerialPorts` | list of strings | *(empty)* | Serial port names to skip during device scanning. Matched ports are never opened. On macOS use the full `/dev/tty.*` path. On Windows you can use just the short name like `"COM3"`. |
+
+### Example (macOS)
+
+```
+XPLProPlugin:
+{
+  logSerialData = 0;
+  ignoreSerialPorts = (
+    "/dev/tty.Bluetooth-Incoming-Port",
+    "/dev/tty.usbmodem-SomethingElse"
+  );
+};
+```
+
+### Example (Windows)
+
+```
+XPLProPlugin:
+{
+  logSerialData = 1;
+  ignoreSerialPorts = ( "COM3", "COM5" );
+};
+```
+
+> **Note:** If the configuration file does not exist, the plugin will log a
+> warning and run with default values. The `ignoreSerialPorts` list is
+> optional — when omitted, all discovered ports are scanned.
+
 ## Building on macOS
 
 The plugin builds as a Universal Binary (x86_64 + arm64) via CMake.

@@ -1,7 +1,6 @@
 
 #include <string.h>
 //#include "XPLDirectCommon.h"
-
 #include "Config.h"
 
 Config::Config(char *inFileName)
@@ -12,7 +11,6 @@ Config::Config(char *inFileName)
     
     FILE* cfgFile;
     _validConfig = false;
-    
    
     if (cfgFile = fopen(_cfgFileName, "r"))
         fclose(cfgFile);
@@ -32,24 +30,19 @@ Config::Config(char *inFileName)
     {
         fprintf(errlog, "Error: %s  Line:%i\r\n", config_error_text(&_cfg), config_error_line(&_cfg));
         config_destroy(&_cfg);
-           
     }
     else                                      
         fprintf(errlog, "Success.\n");
   
     _validConfig = true;
- 
 }
 
 Config::~Config()
 {
     if (_validConfig) return;
-
     config_write_file(&_cfg, _cfgFileName);
-   
 	config_destroy(&_cfg);
 }
-
 
 // commit changes to the configuration file
 void Config::saveFile(void)
@@ -62,11 +55,8 @@ void Config::saveFile(void)
     else
     {
        // fprintf(errlog, "Config::saveFile: Success updating configuration file.\n");
-       
-
     }
 }
-
 
 // getSerialLogFlag
 int Config::getSerialLogFlag(void)
@@ -101,8 +91,46 @@ void Config::setSerialLogFlag(int flag)
         fprintf(errlog, "***Config module returned error setting XPLProPlugin.logSerialData to value %i\r\n", flag);
 }
 
+// isPortIgnored -- check if a serial port name is in the ignore list
+// Config file example:
+//   XPLProPlugin:
+//   {
+//     ignoreSerialPorts = ( "/dev/tty.Bluetooth-Incoming-Port", "COM3" );
+//   };
+int Config::isPortIgnored(const char* portName)
+{
+    if (!_validConfig) return 0;
 
+    config_setting_t* list = config_lookup(&_cfg, "XPLProPlugin.ignoreSerialPorts");
+    if (list == NULL) return 0;
 
+    int count = config_setting_length(list);
+    for (int i = 0; i < count; i++)
+    {
+        const char* entry = config_setting_get_string_elem(list, i);
+        if (entry == NULL) continue;
+
+        // Exact match (works for macOS /dev/tty.* paths and full Windows paths)
+        if (strcmp(entry, portName) == 0)
+        {
+            fprintf(errlog, "Config: port \"%s\" is in the ignore list, skipping.\n", portName);
+            return 1;
+        }
+
+#if IBM
+        // On Windows, portName is "\\.\COMn".  Allow the config file to
+        // specify just "COMn" for convenience.
+        const char* suffix = strrchr(portName, '\\');
+        if (suffix && strcmp(entry, suffix + 1) == 0)
+        {
+            fprintf(errlog, "Config: port \"%s\" matches ignore entry \"%s\", skipping.\n", portName, entry);
+            return 1;
+        }
+#endif
+    }
+
+    return 0;
+}
 
 
 /*
@@ -110,4 +138,3 @@ void Config::setSerialLogFlag(int flag)
 Stuff related to components
 
 */
-

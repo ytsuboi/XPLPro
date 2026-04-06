@@ -33,8 +33,6 @@ public:
 
 	serialClass* port;							// handle to open com port
 
-
-
 private: 
 	
 	void _processPacket(void);
@@ -48,10 +46,4 @@ private:
 	int    _referenceID;					// possibly temporary to id ourselves exterally
 	
 	int _flightLoopPause;							// while initializing datarefs and commands this can be true to stop flight loop cycle.  Downside is, if it never becomes false...
-	
-	
-	
-		
-
-
 };

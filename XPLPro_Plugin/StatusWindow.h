@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 void statusWindowCreate(void);
 int statusWindowActive(void);
 

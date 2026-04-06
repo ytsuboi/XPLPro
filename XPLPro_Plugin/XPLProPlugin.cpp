@@ -1,14 +1,9 @@
 /*
 
-
   XPLPro - plugin for serial interface to Arduino
   Created by Curiosity Workshop -- Michael Gerlicher,  September 2020.
-
   	
 */
-
-
-
 
 #include <stdio.h>
 #include <string.h>
@@ -24,17 +19,13 @@
 #include "XPLMDisplay.h"
 #include "XPLMGraphics.h"
 #include "XPLMMenus.h"
-
 #include "XPWidgets.h"
 #include "XPStandardWidgets.h"
-
 #include "XPLMUtilities.h"
 #include "XPLMProcessing.h"
-
 #include "XPLMCamera.h"
 #include "XPUIGraphics.h"
 #include "XPWidgetUtils.h"
-
 
 #include "StatusWindow.h"
 
@@ -54,7 +45,6 @@ Config *XPLConfig;
 
 abbreviations gAbbreviations;
 
-
 extern long int packetsSent;
 extern long int packetsReceived;
 extern int validPorts;
@@ -68,24 +58,15 @@ XPLMMenuID      myMenu;
 int             disengageMenuItemIndex;
 int				logSerialMenuItemIndex;
 
-
-
 XPLMCommandRef ResetCommand = NULL;
-
-
-
-
 
 PLUGIN_API int XPluginStart(
 						char *		outName,
 						char *		outSig,
 						char *		outDesc)
 {
-		
 		int			mySubMenuItem;
-		
 		char outFilePath[256];
-	
 	
     fopen_s(&errlog, "XPLProError.log", "w");
 	if (!errlog)
@@ -99,7 +80,6 @@ PLUGIN_API int XPluginStart(
 	strcpy(outName, "XPLPro");
 	strcpy(outSig, "xplpro.arduino.cw");
 	strcpy(outDesc, "Direct communications with Arduino infrastructure");
-
 
 	fprintf(errlog, "Curiosity Workshop XPLPro interface version %u copyright 2007-2023.  \n", XPL_VERSION );
 
@@ -119,14 +99,9 @@ PLUGIN_API int XPluginStart(
 
 	if (logSerial) fprintf(errlog, "Serial logging enabled.\r\n");  else fprintf(errlog, "Serial logging disabled.\r\n");
 	
-	
 	gAbbreviations.begin();
-
-	
 	
 	XPLMDebugString("XPLPro:  Initializing Plug-in\n");
-
-	
 	
 	/* First we put a new menu item into the plugin menu.
 	 * This menu item will contain a submenu for us. */
@@ -155,19 +130,16 @@ PLUGIN_API int XPluginStart(
 	if (logSerial) XPLMCheckMenuItem(myMenu, logSerialMenuItemIndex, xplm_Menu_Checked);
 	else           XPLMCheckMenuItem(myMenu, logSerialMenuItemIndex, xplm_Menu_Unchecked);
 
-	
 	XPLMRegisterFlightLoopCallback(							// Setup timed processing		
 		MyFlightLoopCallback,	// Callback 
 		-2.0,					// Interval 
 		NULL);					// refcon not used. 
-	
 
 	ResetCommand = XPLMCreateCommand("XPLPro/ResetDevices", "Disengage / re-engage XPLPro Devices");
 	XPLMRegisterCommandHandler(ResetCommand,              // in Command name
 		ResetCommandHandler,       // in Handler
 		1,                      // Receive input before plugin windows.
 		(void*)0);            // inRefcon.
-	
 
 	if (logSerial)
 	{
@@ -176,12 +148,9 @@ PLUGIN_API int XPluginStart(
 	}
 
 	XPLMDebugString("XPLPro:  Plugin initialization complete.\n");
-
-
 	
 	return 1;
 }
-
 
 // XPluginStop
 
@@ -190,15 +159,10 @@ PLUGIN_API void	XPluginStop(void)
 //	cmpSelect.saveConfiguration();
 //	cmpLEDEdit.saveConfiguration();
 
-	
 	disengageDevices();
 	if (errlog) fprintf(errlog, "Ending plugin, cycle count: %u Packets transmitted: %u, Packets Received: %u\n", cycleCount, packetsSent, packetsReceived);
 	if (errlog) fclose(errlog);
-
-
 	if (serialLogFile) fclose(serialLogFile);
-	
-	
 }
 
 
@@ -228,7 +192,6 @@ PLUGIN_API void XPluginReceiveMessage(
 		fprintf(errlog, "%s says that the current plane was unloaded.  I will disengage devices.  \n", pluginName);
 		disengageDevices();
 		XPLMSetMenuItemName(myMenu, disengageMenuItemIndex, "Engage Devices", 0);
-
 	}
 	if (inMessage == 108) // 108 is supposed to = XPLM_MSG_LIVERY_LOADED
 	//if (inMessage == XPLM_MSG_PLANE_LOADED)
@@ -241,7 +204,6 @@ PLUGIN_API void XPluginReceiveMessage(
 //	fprintf(errlog, "Xplane sent me a message from: %s, message: %i\n", pluginName, inMessage);
 }
 
-
 /**************************************************************************************/
 /* MyMenuHandlerCallback-- Handle users request for calibration                       */
 /**************************************************************************************/
@@ -251,7 +213,6 @@ void	MyMenuHandlerCallback(
 {
 
 //	fprintf(errlog, "User selected inMenuRef: %i, inItemRef: %i\n", (int)(int *)inMenuRef, (int)(int *)inItemRef);
-	
 
 	// Handle request for status window
 	if (!strcmp((const char*)inItemRef, "Status"))   // menu 0, item 1, "Status"
@@ -268,7 +229,6 @@ void	MyMenuHandlerCallback(
 			disengageDevices();
 			
 			XPLMSetMenuItemName(myMenu, disengageMenuItemIndex, "Engage Devices", 0);
-			
 		}
 		else
 		{
@@ -280,7 +240,6 @@ void	MyMenuHandlerCallback(
 		}
 
 	}
-	
 
 	// Handle request toggle for serial logging
 	if (!strcmp((const char*)inItemRef, "Log Serial Data"))   // menu 0, item 1, "Log Serial Data"
@@ -303,14 +262,9 @@ void	MyMenuHandlerCallback(
 				XPLMCheckMenuItem(myMenu, logSerialMenuItemIndex, xplm_Menu_Checked);
 				XPLConfig->setSerialLogFlag(1);
 			}
-
 		}
 	}
-
 }
-
-
-
 
 /**************************************************************************************/
 /* MyFlightLoopCallback -- Called by xplane every few flight loops                    */
@@ -333,25 +287,19 @@ float	MyFlightLoopCallback(
 	return (float)XPL_RETURN_TIME;
 }
 
-
-
-
 int widgetMessageDispatcher(XPWidgetMessage inMessage, XPWidgetID inWidget, intptr_t	inParam1, intptr_t inParam2)
 {
 	// need to add for each dialog for now
-
 	return 0;	// always return 0 if we don't know what to do with the message
-
 }
 
-int    ResetCommandHandler(XPLMCommandRef       inCommand,
-	XPLMCommandPhase     inPhase,
+int ResetCommandHandler(XPLMCommandRef inCommand,
+	XPLMCommandPhase inPhase,
 	void* inRefcon)
 {
 	//  Use this structure to have the command executed on button up only.
 	if (inPhase == xplm_CommandEnd)
 	{
-
 		fprintf(errlog, "XPLPro/ResetDevices command received, I am complying. \n");
 
 		disengageDevices();				// just to make sure we are cleared
