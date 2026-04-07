@@ -9,11 +9,65 @@ Original plug-in is distributing on [Patreon](https://www.patreon.com/posts/intr
 ✅ Windows (tested on Windows 11 Pro 25H2, X-Plane 12)<br />
 I don't have any motivation on Linux port.
 
-**You can download built binary from [Releases](https://github.com/ytsuboi/XPLPro/releases).**
+**You can download built plug-in binary from [Releases](https://github.com/ytsuboi/XPLPro/releases).**
 
-## macOS Gatekeeper warning
+Please help me to cover Apple Developer Program fee.😝<br />
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/N4N71XEGZD)
 
-![](./Gatekeeper_warning.png)
+## How it works
+
+XPL/Pro is a two-part system that bridges Arduino hardware and X-Plane
+flight simulator:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  X-Plane 12                                             │
+│                                                         │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  XPLPro Plugin (XPLPro_Plugin)                    │  │
+│  │                                                   │  │
+│  │  • Runs inside X-Plane as a native plugin         │  │
+│  │  • Pushes DataRef value changes to Arduino        │  │
+│  └──────────────────────┬────────────────────────────┘  │
+│                         │                               │
+└─────────────────────────┼───────────────────────────────┘
+                          │  USB Serial (115200 baud)
+                          │  ASCII packet protocol
+┌─────────────────────────┼───────────────────────────────┐
+│  Arduino                │                               │
+│                         │                               │
+│  ┌──────────────────────┴────────────────────────────┐  │
+│  │  XPLPro Library (XPLPro_Arduino)                  │  │
+│  │                                                   │  │
+│  │  • Registers DataRefs and Commands                │  │
+│  │  • Receives DataRef updates via callback          │  │
+│  │  • Sends DataRef writes and Command triggers      │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  Physical hardware: switches, LEDs, encoders,           │
+│  servos, potentiometers, displays, etc.                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+For the full wire protocol specification (packet format, handshake
+sequence, all command types with examples), see
+**[`PROTOCOL.md`](PROTOCOL.md)**.
+
+## Arduino Library (`XPLPro_Arduino`)
+
+The `XPLPro_Arduino` directory contains the Arduino client library. It allows
+you to connect physical hardware (switches, LEDs, rotary encoders, servos,
+potentiometers, displays, etc.) to an Arduino board and interface them with
+X-Plane in real time through the XPLPro plugin.
+
+For a complete API reference with detailed usage instructions and code
+examples, see **[`XPLPro_Arduino/XPLPro/API.md`](XPLPro_Arduino/XPLPro/API.md)**.
+
+## macOS Gatekeeper warning (plug-in)
+
+<p align="center">
+<img src="./Gatekeeper_warning.png" width="350" height="auto">
+</p>
 
 Because the plugin binary is not signed with an Apple Developer ID, macOS may show an **"Apple could not verify"** dialog the first time the plugin is loaded. To resolve this, remove the quarantine attribute from the file:
 
@@ -139,14 +193,6 @@ lipo -info build_mac/mac.xpl
 otool -L  build_mac/mac.xpl   # should only reference X-Plane frameworks + OS libs
 ```
 
-### Installation
-
-Copy `mac.xpl` to your X-Plane installation:
-
-```
-X-Plane 12/Resources/plugins/XPLPro/64/mac.xpl
-```
-
 ## Building on Windows (without Visual Studio)
 
 Microsoft provides a free, command-line-only distribution of the
@@ -203,11 +249,3 @@ ninja
 ```
 
 With Ninja the output is `build_win\win.xpl`.
-
-### Installation
-
-Copy `win.xpl` to your X-Plane installation:
-
-```
-X-Plane 12\Resources\plugins\XPLPro\64\win.xpl
-```
